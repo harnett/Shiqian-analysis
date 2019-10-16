@@ -2067,13 +2067,6 @@ function extractFluorescencesCallback(GUI, ~)
     
     lightMask = [];
     
-    interp_dff = false;
-    choice = questdlg('Interpolate dF/F for rejected frames?', 'Record', 'Yes', 'No', 'No');
-    if strcmp(choice, 'Yes')
-        interp_dff = true;
-    end
-        
-    
 %     choice = questdlg('Record light contamination?', 'Record', 'Yes', 'No', 'No');
 
 %     if strcmp(choice, 'Yes')
@@ -2281,16 +2274,13 @@ function extractFluorescencesCallback(GUI, ~)
         
         roiFluorescences(reject_frames_all,:) = nan;
         
-        if interp_dff
-            for r=1:size(roiFluorescences,2)
-                V = roiFluorescences(:,r);
-                X = ~isnan(V);
-                X = X.';
-                Y = cumsum(X-diff([1,X])/2);
-                Y = Y.';
-                roiFluorescences(:,r) = interp1(1:nnz(X),V(X),Y);
-            end
+        for r=1:size(roiFlourescences,2)
+            X = ~isnan(V);
         end
+%         >> V = [1 2 3 NaN 4 4.5 5.5 NaN NaN 6 6 7 NaN NaN NaN 8];
+%         >> X = ~isnan(V);
+%         >> Y = cumsum(X-diff([1,X])/2);
+%         >> Z = interp1(1:nnz(X),V(X),Y)
         
         dff = calculateDFF(roiFluorescences);
         
