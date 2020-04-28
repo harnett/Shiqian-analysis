@@ -298,60 +298,67 @@ function [meanImage, maxIntensityImage, crossCorrelationImage, localCrossCorrela
         end
     end
 
-    switch method
-        
-        % use labrigger method
-        case 1
-        	globalWindow = 1;
-            localWindow = 20;
-            
-            localCrossCorrelationImage = zeros(numberOfRows, numberOfColumns, 2*localWindow + 1, 2*localWindow + 1);
-            crossCorrelationImage = zeros(numberOfRows, numberOfColumns);
-            
-            parfor y = 1:numberOfRows
-                
-                % it's necessary to split this computation up into rows to follow MATLAB's parfor rules
-                localCrossCorrelationRow = NaN(numberOfColumns, 2*localWindow + 1, 2*localWindow + 1);
-                globalCrossCorrelationRow = NaN(1, numberOfColumns);
-                    
-                yMin = max(y - localWindow, 1);
-                yMax = min(y + localWindow, numberOfRows);
-                
-                for x = 1:numberOfColumns
-                    
-                    xMin = max(x - localWindow, 1);
-                    xMax = min(x + localWindow, numberOfColumns);
-                    
-                    % making this a non-broadcast variable doesn't speed things up enough to be worth it
-                    temp = imageStack(yMin:yMax, xMin:xMax, :);
-                    
-                    % extract pixel and neighborhood time courses and subtract their respective means
-                    neighborhoodTimeCourse = bsxfun(@minus, temp, mean(temp, 3));
-                    pixelTimeCourse = neighborhoodTimeCourse(y - yMin + 1, x - xMin + 1, :);
-                    
-                    % auto-correlation, for normalization later 
-                    neighborhoodAutoCorrelation = sum(neighborhoodTimeCourse.*neighborhoodTimeCourse, 3);
-                    pixelAutoCorrelation = neighborhoodAutoCorrelation(y - yMin + 1, x - xMin + 1);
+    if strcmp(Parameters.cc_choice, 'Yes')
+        switch method
 
-                    % cross-correlation with normalization
-                    localCrossCorrelation = sum(bsxfun(@times, pixelTimeCourse, neighborhoodTimeCourse), 3)./sqrt(pixelAutoCorrelation*neighborhoodAutoCorrelation);
-                                        
-                    localCrossCorrelationRow(x, yMin - y + localWindow + 1:yMax - y + localWindow + 1, xMin - x + localWindow + 1:xMax - x + localWindow + 1) = localCrossCorrelation;
-                    
-                    % just use neighboring pixels for the global cross-correlation
-                    globalCrossCorrelation = localCrossCorrelationRow(x, localWindow + 1 - globalWindow:localWindow + 1 + globalWindow, localWindow + 1 - globalWindow:localWindow + 1 + globalWindow);
-                    
-                    % delete the middle point
-                    globalCrossCorrelation(globalWindow + 1, globalWindow + 1) = NaN;    
-                    
-                    % then take the mean, excluding NaNs from center and edge cases
-                    globalCrossCorrelationRow(x) = nanmean(globalCrossCorrelation(:));
+            % use labrigger method
+            case 1
+                globalWindow = 1;
+                localWindow = 20;
+
+                localCrossCorrelationImage = zeros(numberOfRows, numberOfColumns, 2*localWindow + 1, 2*localWindow + 1);
+                crossCorrelationImage = zeros(numberOfRows, numberOfColumns);
+
+                parfor y = 1:numberOfRows
+
+                    % it's necessary to split this computation up into rows to follow MATLAB's parfor rules
+                     localCrossCorrelationRow = NaN(numberOfColumns, 2*localWindow + 1, 2*localWindow + 1);
+                     globalCrossCorrelationRow = NaN(1, numberOfColumns);
+
+                     yMin = max(y - localWindow, 1);
+                     yMax = min(y + localWindow, numberOfRows);
+
+                    for x = 1:numberOfColumns
+
+                         xMin = max(x - localWindow, 1);
+                         xMax = min(x + localWindow, numberOfColumns);
+
+                        % making this a non-broadcast variable doesn't speed things up enough to be worth it
+                         temp = imageStack(yMin:yMax, xMin:xMax, :);
+
+                        % extract pixel and neighborhood time courses and subtract their respective means
+                         neighborhoodTimeCourse = bsxfun(@minus, temp, mean(temp, 3));
+                         pixelTimeCourse = neighborhoodTimeCourse(y - yMin + 1, x - xMin + 1, :);
+
+                        % auto-correlation, for normalization later 
+                         neighborhoodAutoCorrelation = sum(neighborhoodTimeCourse.*neighborhoodTimeCourse, 3);
+                         pixelAutoCorrelation = neighborhoodAutoCorrelation(y - yMin + 1, x - xMin + 1);
+
+                        % cross-correlation with normalization
+                         localCrossCorrelation = sum(bsxfun(@times, pixelTimeCourse, neighborhoodTimeCourse), 3)./sqrt(pixelAutoCorrelation*neighborhoodAutoCorrelation);
+
+                         localCrossCorrelationRow(x, yMin - y + localWindow + 1:yMax - y + localWindow + 1, xMin - x + localWindow + 1:xMax - x + localWindow + 1) = localCrossCorrelation;
+
+                        % just use neighboring pixels for the global cross-correlation
+                         globalCrossCorrelation = localCrossCorrelationRow(x, localWindow + 1 - globalWindow:localWindow + 1 + globalWindow, localWindow + 1 - globalWindow:localWindow + 1 + globalWindow);
+
+                        % delete the middle point
+                         globalCrossCorrelation(globalWindow + 1, globalWindow + 1) = NaN;    
+
+                        % then take the mean, excluding NaNs from center and edge cases
+                         globalCrossCorrelationRow(x) = nanmean(globalCrossCorrelation(:));
+                    end
+
+                     localCrossCorrelationImage(y, :, :, :) = localCrossCorrelationRow;
+                     crossCorrelationImage(y, :) = globalCrossCorrelationRow;
                 end
-                
-                localCrossCorrelationImage(y, :, :, :) = localCrossCorrelationRow;
-                crossCorrelationImage(y, :) = globalCrossCorrelationRow;
-            end
+         end
+    else
+       
+       localCrossCorrelationImage = zeros(numberOfRows, numberOfColumns, 1,1);
+       crossCorrelationImage = zeros(numberOfRows, numberOfColumns);
     end
+    
     
     % clear up some memory
     clear imageStack

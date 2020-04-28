@@ -270,7 +270,9 @@ function [phaseDifferences, rowShifts, columnShifts, result] = sbxRigid(Info, Pa
     
     save([Info.Directory.folder, Info.Directory.name, '.rigid'], 'phaseDifferences', 'rowShifts', 'columnShifts', 'frameCrop');
 
-    delete(progressBar);
+    if GUI
+        delete(progressBar);
+    end
     
     result = 'Completed';
     

@@ -1713,6 +1713,7 @@ function motionCorrectCallback(GUI, ~)
         tagstruct.PlanarConfiguration = getTag(GUIHandles.tifObject,'PlanarConfiguration'); %Tiff.PlanarConfiguration.Chunky; 
         %setTag(tifData_reg,tagstruct);
         %write(tifData_reg,uint32(M2(:,:,1)));
+        
         disp('writing tif data...');
         for ii=1:size(M2,3)
            setTag(tifData_reg,tagstruct);
@@ -1991,9 +1992,28 @@ function loadROIMaskCallback(GUI, ~)
     roiIDs = num2cell(num2str(roiIDs),2);
     roiIDs = cellfun(@strip, roiIDs, 'UniformOutput', false); % this is necessary as num2str introduced leading spaces
     for i=1:length(roiIDs)
-        if mod(length(roiIDs{i}),2) > 0
+        if length(roiIDs{i}) == 1
+           roiIDs{i} = strcat('000',roiIDs{i});
+        elseif length(roiIDs{i}) == 2
+           roiIDs{i} = strcat('00',roiIDs{i});
+        elseif length(roiIDs{i}) == 3
+           roiIDs{i} = strcat('0',roiIDs{i});
+        elseif length(roiIDs{i}) == 5
+           roiIDs{i} = strcat('000',roiIDs{i});
+        elseif length(roiIDs{i}) == 6
+           roiIDs{i} = strcat('00',roiIDs{i});
+        elseif length(roiIDs{i}) == 7
+           roiIDs{i} = strcat('0',roiIDs{i});
+        elseif length(roiIDs{i}) == 9
+           roiIDs{i} = strcat('000',roiIDs{i});
+        elseif length(roiIDs{i}) == 11
+           roiIDs{i} = strcat('000',roiIDs{i});
+        elseif length(roiIDs{i}) == 12
+           roiIDs{i} = strcat('00',roiIDs{i});
+        elseif length(roiIDs{i}) == 13
            roiIDs{i} = strcat('0',roiIDs{i});
         end
+        
     end
     GUIHandles.roiDrawing.roiTree.String = roiIDs;
     GUIHandles.roiDrawing.roiTree.Value = 1;
@@ -2296,22 +2316,22 @@ function extractFluorescencesCallback(GUI, ~)
         
         figure;
         ax1 = subplot(521);
-        plot(roiFluorescences);
+        plot(roiFluorescences(2:end,:));
         ylabel('ROI brightness');
         ax2 = subplot(523);
-        plot(dff);
+        plot(dff(2:end,:));
         ylabel('DF/F');
         ax3 = subplot(525);
-        plot(meanBrightness);
+        plot(meanBrightness(2:end));
         ylabel('FOV brightness');
         yline(mean_FOV_brigthness-brightness_shift_std*std_FOV_brightness, '--');
         ax4 = subplot(527);
-        plot(GUIHandles.shifts_x);
+        plot(GUIHandles.shifts_x(2:end,:));
         yline(mean_shifts_x - registration_shift_std*std_shifts_x, '--');
         yline(mean_shifts_x + registration_shift_std*std_shifts_x, '--');
         ylabel('shifts x');
         ax5 = subplot(529);
-        plot(GUIHandles.shifts_y);
+        plot(GUIHandles.shifts_y(2:end,:));
         ylabel('shifts y');
         yline(mean_shifts_y - registration_shift_std*std_shifts_y, '--');
         yline(mean_shifts_y + registration_shift_std*std_shifts_y, '--');
@@ -2350,6 +2370,7 @@ function extractFluorescencesCallback(GUI, ~)
         
         if GUIHandles.roiDrawing.neuropilCorrection > 0
             csvwrite([fileName, '.sig'], [roiFluorescences, neuropilFluorescences]);
+            csvwrite([fileName, '.dff'], dff);
             
             if ~isempty(lightMask)
                 save([fileName, '.raw'], 'roiFluorescences', 'neuropilFluorescences', 'lightContaminations', 'meanBrightness', 'roiMask', 'overlapMask');
@@ -2358,6 +2379,7 @@ function extractFluorescencesCallback(GUI, ~)
             end
         else
             csvwrite([fileName, '.sig'], roiFluorescences);
+            csvwrite([fileName, '.dff'], dff);
             save([fileName, '.raw'], roiFluorescences);
         end
 
@@ -3639,13 +3661,13 @@ function roiTreeSetParentCallback(GUI, ~)
     if not(isempty(GUIHandles.roiDrawing.roiTree.String))
         current_roiTree_selection = GUIHandles.roiDrawing.roiTree.String(GUIHandles.roiDrawing.roiTree.Value);
         current_roiTree_selection = current_roiTree_selection{1};   
-        if contains(current_roiTree_selection,'00')
-            parentIndexLevel = strfind(current_roiTree_selection,'00');
-            parentIndexLevel = floor(parentIndexLevel(1)/2);
-            current_roiTree_selection = current_roiTree_selection(1:parentIndexLevel*2);
+        if contains(current_roiTree_selection,'0000')
+            parentIndexLevel = strfind(current_roiTree_selection,'0000');
+            parentIndexLevel = floor(parentIndexLevel(1)/4);
+            current_roiTree_selection = current_roiTree_selection(1:parentIndexLevel*4);
         else
-            parentIndexLevel = ceil(length(current_roiTree_selection)/2);
-            current_roiTree_selection = current_roiTree_selection(1:parentIndexLevel*2);
+            parentIndexLevel = ceil(length(current_roiTree_selection)/4);
+            current_roiTree_selection = current_roiTree_selection(1:parentIndexLevel*4);
         end
         GUIHandles.roiDrawing.roiTreeCurrentParent = current_roiTree_selection;
         GUIHandles.roiDrawing.roiTreeLevel.String = strcat('Parent: ', GUIHandles.roiDrawing.roiTreeCurrentParent);
@@ -4034,7 +4056,7 @@ function candidateROIImageClickFunction(GUI, ~)
     
     if isempty(GUIHandles.roiDrawing.roiTree.String)
         newROIID = 1;
-        GUIHandles.roiDrawing.roiTree.String{end+1} = sprintf('%02d',newROIID);
+        GUIHandles.roiDrawing.roiTree.String{end+1} = sprintf('%04d',newROIID);
     else
         lastroi = find_last_in_roiTree(GUIHandles.roiDrawing.roiTree, GUIHandles.roiDrawing.roiTreeCurrentParent);   
         lastroi_length = length(lastroi);
@@ -4068,11 +4090,11 @@ function lastroi = find_last_in_roiTree(roiTree, parentROI)
     if strcmp(parentROI, '0')
         parentIndexLevel = 0; % level at which the new ROI is to be inserted
     else
-        if contains(parentROI,'00')
-            parentIndexLevel = strfind(parentROI,'00');
-            parentIndexLevel = floor(parentIndexLevel(1)/2);
+        if contains(parentROI,'0000')
+            parentIndexLevel = strfind(parentROI,'0000');
+            parentIndexLevel = floor(parentIndexLevel(1)/4);
         else
-            parentIndexLevel = ceil(length(parentROI)/2);
+            parentIndexLevel = ceil(length(parentROI)/4);
         end
     end
 
@@ -4080,12 +4102,12 @@ function lastroi = find_last_in_roiTree(roiTree, parentROI)
     for j=1:length(roiTree.String) % loop through all entries
         roiTree_cur_id = roiTree.String{j};
         if parentIndexLevel == 0 % special case on 0-level where we just want to coun the number of length=1 roi entries
-            if length(roiTree_cur_id) == 2
+            if length(roiTree_cur_id) == 4
                 num_in_parent = num_in_parent + 1;
             end
         else
-            if ceil(length(roiTree_cur_id)/2) == parentIndexLevel+1 % check if current line is on the desired insertion level (n.b. this is before we check if its the right parent)
-                if strcmp(roiTree_cur_id(1:parentIndexLevel*2), parentROI)
+            if ceil(length(roiTree_cur_id)/4) == parentIndexLevel+1 % check if current line is on the desired insertion level (n.b. this is before we check if its the right parent)
+                if strcmp(roiTree_cur_id(1:parentIndexLevel*4), parentROI)
                     num_in_parent = num_in_parent + 1;
                 end
             end
@@ -4093,16 +4115,16 @@ function lastroi = find_last_in_roiTree(roiTree, parentROI)
     end
     
     if strcmp(parentROI, '0')
-        lastroi = sprintf('%02d',num_in_parent);
+        lastroi = sprintf('%04d',num_in_parent);
     else
         lastroi = parentROI;
-        lastroi(end+1:end+2) = sprintf('%02d',num_in_parent);
+        lastroi = strcat(lastroi, sprintf('%04d',num_in_parent));
         %lastroi = str2double(lastroi);
     end
     
 end
 
-function tree_content = order_roi_tree(roiTree)
+function tree_content_new = order_roi_tree(roiTree)
     % order the tree (its slightly tedious due to it being a cell-array and
     % we want children to be listed below their parent (e.g. 22 comes
     % before 3)
@@ -4111,30 +4133,31 @@ function tree_content = order_roi_tree(roiTree)
    
     max_level = 0;
     for i=1:length(tree_content) % get max depth of the tree
-        if length(tree_content{i})/2 > max_level
-            max_level = length(tree_content{i})/2;
+        if length(tree_content{i})/4 > max_level
+            max_level = length(tree_content{i})/4;
         end
     end   
     
     tree_content_numbers = cellfun(@str2num, tree_content);
     for i=1:length(tree_content) % multiply value on upper levels 
-        tree_content_numbers(i) = tree_content_numbers(i) * (100^(max_level - length(tree_content{i})/2));
+        tree_content_numbers(i) = tree_content_numbers(i) * (10000^(max_level - length(tree_content{i})/4));
     end
     
     tree_content_numbers = sort(tree_content_numbers);
     
     tree_content = num2cell(num2str(tree_content_numbers),2);
     tree_content = cellfun(@strip, tree_content, 'UniformOutput', false); % this is necessary as num2str introduced leading spaces
+    tree_content_new = tree_content;
     for i=1:length(tree_content)      
-        trimmed_tree_content = sprintf('%0*s',max_level*2,tree_content{i});
-        if contains(trimmed_tree_content,'00')
-            parentIndexLevel = strfind(trimmed_tree_content,'00');
-            parentIndexLevel = floor(parentIndexLevel(1)/2);
+        trimmed_tree_content = sprintf('%0*s',max_level*4,tree_content{i});
+        if contains(trimmed_tree_content,'0000')
+            parentIndexLevel = strfind(trimmed_tree_content,'0000');
+            parentIndexLevel = floor(parentIndexLevel(end)/4);
         else
-            parentIndexLevel = ceil(length(trimmed_tree_content)/2);
+            parentIndexLevel = ceil(length(trimmed_tree_content)/4);
         end
-        trimmed_tree_content = trimmed_tree_content(1:parentIndexLevel*2);
-        tree_content{i} = sprintf('%0*s',parentIndexLevel*2,trimmed_tree_content);
+        trimmed_tree_content = trimmed_tree_content(1:parentIndexLevel*4);
+        tree_content_new{i} = sprintf('%0*s',parentIndexLevel*4,trimmed_tree_content);
     end
 end
     
