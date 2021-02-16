@@ -2312,7 +2312,7 @@ function extractFluorescencesCallback(GUI, ~)
             end
         end
         
-        dff = calculateDFF(roiFluorescences);
+        dff = calculateDFF(roiFluorescences,50);
         
         figure;
         ax1 = subplot(521);

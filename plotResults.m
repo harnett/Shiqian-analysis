@@ -1,10 +1,16 @@
-function plotResults(results_datafile_path)
+function plotResults(varargin)
     % load datafile and extract data
-    try
-        [fName, fPath] = uigetfile('.sig', 'Please select file containing imaging data.');
-    catch
-        waitfor(msgbox('Error: Please select valid .sig file.'));
-        error('Please select valid .sig file.');
+    if nargin < 1
+        try
+            [fName, fPath] = uigetfile('.sig', 'Please select file containing imaging data.');
+        catch
+            waitfor(msgbox('Error: Please select valid .sig file.'));
+            error('Please select valid .sig file.');
+        end
+    else
+        results_datafile_path = varargin{1};
+        [fPath, fName] = fileparts(results_datafile_path);
+        fPath = strcat(fPath, filesep);
     end
     fName = strtok(fName, '.');
     sigfile = strcat(fPath, fName, '.sig');
