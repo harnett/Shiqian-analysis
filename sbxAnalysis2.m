@@ -2,7 +2,8 @@ function sbxAnalysis2()
 
     %SBXANALYSIS Graphic interface for analyzing calcium imaging data.
     %   SBXANALYSIS() creates a graphic interface for processing and analyzing calcium imaging data in .sbx format.
-
+    % Author: Enrique Toloza
+    
     GUI = figure('Name', 'Scanbox Analysis', 'NumberTitle', 'off', 'MenuBar', 'none', 'Color', 'w', 'Units', 'normalized', 'Position', [0,0.1,0.85,0.85]);
 
     zoom(GUI, 'off');

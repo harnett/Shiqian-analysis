@@ -4,7 +4,7 @@ datafile = "/Users/lukasfischer/Work/exps/Shiqian/CaMKII/Com-TN/Mouse 1/day 0/T0
 plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
 
 %% CaMKII RITE day 0
-datafile = "/Users/lukasfischer/Work/exps/Shiqian/final dataset/CaMKII/RITE/Mouse 4/day 0/T0.sig"; % File path to the data
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian\final dataset\CaMKII\RITE\Mouse 4\day 0\T0.sig"; % File path to the data
 plot_rois = [4,7,11,25];   
 % frame_range = [1100,4400];
 frame_range = [500,3800];
@@ -13,7 +13,7 @@ plot_title = 'RITE day 0';
 plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
 
 %% CaMKII RITE day 3
-datafile = "/Users/lukasfischer/Work/exps/Shiqian/final dataset/CaMKII/RITE/Mouse 4/day 3/T3.sig"; % File path to the data
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian/final dataset/CaMKII/RITE/Mouse 4/day 3/T3.sig"; % File path to the data
 plot_rois = [19,16,2,34];   
 % frame_range = [1100,4400];
 frame_range = [1,3300];
@@ -299,7 +299,7 @@ plot_title = 'KETEROLAC AFTER';
 plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
 
 %% DREADD CONTROL BEFORE
-datafile = "/Users/lukasfischer/Work/exps/Shiqian/DREADD/Control/Before CNO/Mouse 1/1.sig"; % File path to the data
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian/DREADD/Control/Before CNO/Mouse 1/1.sig"; % File path to the data
 plot_rois = [1,2,3];   
 frame_range = [1,3300];
 plot_title = 'DREADD CONTROL BEFORE';
@@ -349,6 +349,48 @@ plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
 
 %%
 
+%% Gq FLIT Day 0
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian\Gq imaging data_01282021\Gq+C21+FLIT\mouse 2\day 0\T0.sig"; % File path to the data
+plot_rois = [8,22,41];   
+frame_range = [1,3100];
+plot_title = 'Gq FLIT day 7';
+
+plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
+
+%% Gq FLIT Day 7
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian\Gq imaging data_01282021\Gq+C21+FLIT\mouse 2\day 7\T7.sig"; % File path to the data
+plot_rois = [3,32,38];   
+frame_range = [1,3100];
+plot_title = 'Gq FLIT day 7';
+
+plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
+
+%% VECTOR CONTROL FLIT Day 7
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian\Gq imaging data_01282021\vector+C21+FLIT\mouse 1\day 7\T7_rigid.sig"; % File path to the data
+plot_rois = [23,21,34];   
+frame_range = [1,3100];
+plot_title = 'Gq FLIT day 7';
+
+plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
+
+%% TRAP2 FLIT Day 7
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian\Data_20220404\Shiqian data\Weihua - part 1\mouse 2\day 7\T7_rigid.sig"; % File path to the data
+plot_rois = [1,12,9,11];   
+frame_range = [1000,4000];
+plot_title = 'TRAP2 FLIT day 7';
+
+plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
+
+%% TRAP2 FLIT Day 14
+datafile = "C:\Users\lfisc\Work\Projects\Shiqian\Data_20220404\Shiqian data\Weihua - part 1\mouse 2\day 14\T14.sig"; % File path to the data
+plot_rois = [1,13,2,13];   
+frame_range = [1000,4000];
+plot_title = 'TRAP2 FLIT day 14';
+
+plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
+
+%%
+
 function plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
     [fPath,fName,fType] = fileparts(datafile);
     full_path = strcat(fPath,filesep,fName,'_analyzed.mat');
@@ -356,6 +398,7 @@ function plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
     loaded_data = load(full_path, '-mat');
     dff = loaded_data.dff_temp;
     dff_filtered = loaded_data.dff_filtered_temp;
+%     dff_filtered = dff;
     foopsi_events = loaded_data.foopsi_events;
     foopsi_filtered = loaded_data.foopsi_filtered;
 
@@ -378,7 +421,7 @@ function plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
         end
         plot(dff_filtered(from_x:to_x,plot_rois(i)), 'Color','k', 'linewidth', 2);
         hold on;
-        ylim([-0.5,2.5]);
+        ylim([-0.5,2]);
         box off;
         set(ax,'XColor','none','YColor','none');
         
@@ -394,7 +437,7 @@ function plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
                         if size(intersect(onset_idx(j):offset_idx(j),find(event_idx)),1) > 1 
                             onidx = onset_idx(j) - frame_range(1) + 1;
                             offidx = offset_idx(j) - frame_range(1) + 1;
-                            plot(onidx-1:offidx,dff_filtered(onset_idx(j)-1:offset_idx(j),plot_rois(i)),'Color','r', 'LineWidth', 2.1);
+                            plot(onidx-1:offidx,dff_filtered(onset_idx(j)-1:offset_idx(j),plot_rois(i)),'Color','#FF9700', 'LineWidth', 2.1);
                         end
                     end
                 end 
@@ -409,7 +452,7 @@ function plot_sampletraces(datafile, plot_rois, frame_range, plot_title)
                     if onset_idx(j) > frame_range(1) && offset_idx(j) < frame_range(2)
                         onidx = onset_idx(j) - frame_range(1) + 1;
                         offidx = offset_idx(j) - frame_range(1) + 1;
-                        plot(onidx-1:offidx,dff_filtered(onset_idx(j)-1:offset_idx(j),plot_rois(i)),'Color','#10D600', 'LineWidth', 2.1);
+                        plot(onidx-1:offidx,dff_filtered(onset_idx(j)-1:offset_idx(j),plot_rois(i)),'Color','#00BDFF', 'LineWidth', 2.1);
                     end
                 end
             end

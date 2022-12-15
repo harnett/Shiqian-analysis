@@ -95,7 +95,7 @@ bonferroni_alpha = 0.05 / 6;
 
 [p,tbl,stats] = anova1(pre_post_combined);
 [c,m,h,nms] = multcompare(stats);
-c
+
 
 x=1;
 %%
